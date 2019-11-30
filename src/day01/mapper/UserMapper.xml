@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="day01.mapper.UserMapper">
+
+    <insert id="save" parameterType="user">
+        insert into user (username,sex,birthday,address)
+        values (#{username},#{sex},#{birthday},#{address})
+    </insert>
+    <select id="findUserById" parameterType="int" resultType="user">
+        select * from user where id = #{id}
+    </select>
+    <!--通过包装类查询-->
+    <select id="findUserByUserQueryVO" parameterType="userQueryVO" resultType="user">
+        select u.* from user u where u.id = #{user.id}
+    </select>
+    <!--通过Map查询-->
+    <select id="findUserByMap" parameterType="hashmap" resultType="user">
+        select* from user where username like '%${name}%' and sex = #{sex}
+    </select>
+
+
+    <!--查询用户个数-->
+    <select id="findUserCount" parameterType="userQueryVO" resultType="int">
+        select count(*) from user where sex = #{user.sex}
+    </select>
+
+    <!--设置返回数据为resultMap-->
+    <resultMap id="userResultMap" type="user">
+        <id property="id" column="id_"></id>
+        <result property="username" column="username_"></result>
+        <result property="sex" column="sex_"></result>
+        <result property="birthday" column="birthday_"></result>
+        <result property="address" column="address_"></result>
+    </resultMap>
+    <select id="findUserByIdResultMap" parameterType="int" resultMap="userResultMap">
+        select id id_,username username_,sex sex_,birthday birthday_,address address_
+        from user
+        where id = #{id}
+    </select>
+
+    <!--if和where的使用-->
+    <sql id="select_user_where">
+        <if test="user != null">
+            <if test="user.sex != null and user.sex != ''">
+                sex = #{user.sex}
+            </if>
+            <if test="user.username != null and user.username != ''">
+                and username like '%${user.username}%'
+            </if>
+        </if>
+    </sql>
+    <select id="findUserList" parameterType="userQueryVO" resultType="user">
+        select * from user
+        <where>
+            <include refid="select_user_where"/>
+        </where>
+    </select>
+    <select id="findUserByIds" parameterType="userQueryVO" resultType="user">
+        select * from user
+        <where>
+            <if test="ids != null and ids.size > 0">
+                <!--
+                foreach:表示一个佛reach循环
+                collection:集合参数的名称,如果是直接传入集合参数,则该处的参数名称只能填写[list]
+                item:每次遍历出来的对象
+                for(Integer id :ids){
+                }
+                open:开始遍历是拼接的串
+                close:结束遍历时拼接的串
+                separator:遍历出的每个对象之间需要拼接的字符
+                -->
+                <foreach collection="ids" item="id" open="id in(" close=")" separator=",">
+                    ${id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <select id="findUserByIds2" parameterType="list" resultType="user">
+        select * from user
+        <where>
+            <if test="list != null and list.size > 0">
+                <!--
+                foreach:表示一个佛reach循环
+                collection:集合参数的名称,如果是直接传入集合参数,则该处的参数名称只能填写[list]
+                item:每次遍历出来的对象
+                for(Integer id :ids){
+                }
+                open:开始遍历是拼接的串
+                close:结束遍历时拼接的串
+                separator:遍历出的每个对象之间需要拼接的字符
+                -->
+                <foreach collection="list" item="id" open="id in(" close=")" separator=",">
+                    ${id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+</mapper>

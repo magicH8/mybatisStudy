@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="day02.mapper.OrderMapper">
+    <select id="findOrderById" parameterType="int" resultType="ordersExt">
+        select
+        o.*,u.username,u.address
+        from
+        orders o,user u
+        where
+        o.user_id = u.id
+        and o.id = #{id}
+    </select>
+    <!--如果模型里面有模型,使用resultMap-->
+    <resultMap id="orderResultMap" type="orders">
+        <!--往orders的模型匹配数据-->
+        <id column="id" property="id"></id>
+        <result column="note" property="note"></result>
+        <result column="number" property="number"></result>
+        <result column="createtime" property="createtime"></result>
+        <!--往orders的user匹配数据-->
+        <association property="user" javaType="user">
+            <id column="user_id" property="id"></id>
+            <result column="username" property="username"></result>
+            <result column="address" property="address"></result>
+
+        </association>
+    </resultMap>
+    <select id="findOrderById2" parameterType="int" resultMap="orderResultMap">
+        select
+        o.*,u.username,u.address
+        from
+        orders o,user u
+        where
+        o.user_id = u.id
+        and o.id = #{id}
+    </select>
+
+    <!--一对多-->
+    <resultMap id="orderResultMap3" type="orders">
+        <!--往orders的模型匹配数据-->
+        <id column="id" property="id"></id>
+        <result column="note" property="note"></result>
+        <result column="number" property="number"></result>
+        <result column="createtime" property="createtime"></result>
+        <!--往orders的user匹配数据-->
+        <association property="user" javaType="user">
+            <id column="user_id" property="id"></id>
+            <result column="username" property="username"></result>
+            <result column="address" property="address"></result>
+        </association>
+        <!--往orders的orderdetails匹配数据
+            集合里类型使用ofType
+        -->
+        <collection property="orderDetails" ofType="orderDetail">
+            <id column="detail_id" property="id"></id>
+            <result column="items_id" property="items_id"></result>
+            <result column="items_num" property="items_num"></result>
+        </collection>
+    </resultMap>
+    <select id="findOrderById3" parameterType="int" resultMap="orderResultMap3">
+        SELECT o.*,u.`username`,u.`address`,od.`id` detail_id, od.`items_id`,od.`items_num`
+        FROM `orders` o,`user` u,`orderdetail` od
+        WHERE o.`user_id` = u.`id` AND od.`orders_id` = o.`id` AND o.`id` = #{id}
+    </select>
+
+
+    <!--懒加载-->
+    <resultMap id="findOrderAndUserByLazyloading" type="orders">
+        <id column="id" property="id"></id>
+        <result column="note" property="note"></result>
+        <result column="number" property="number"></result>
+        <result column="createtime" property="createtime"></result>
+        <association property="user" select="day02.mapper.UserMapper.findUserById" column="user_id"></association>
+    </resultMap>
+    <select id="findOrderAndUserByLazyloading" resultMap="findOrderAndUserByLazyloading">
+        select * from orders
+    </select>
+</mapper>
